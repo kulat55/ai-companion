@@ -37,6 +37,8 @@
 │   ├── Modelfile.qwen-albedo    # 本地 Ollama 模型定义（8k 上下文防空回复）
 │   └── *.ps1                    # QQ 开关 / 守护启停脚本
 ├── desktop/backend.py           # 一键启动编排后端（PG→Letta→桌宠全自动）
+│   ├── inject_frontend.py       # 自动注入网页管理面板（幂等，零改动）
+│   └── frontend_patch.html      # 管理面板/心情/问候/诊断/试听 中性模板
 ├── letta-server/                # 记忆服务脚本
 │   ├── init_pg.py               # 内嵌 PostgreSQL 初始化
 │   ├── create_agent.py          # 创建 AI 伴侣智能体（可自定义人设）
