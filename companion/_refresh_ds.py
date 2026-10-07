@@ -22,7 +22,7 @@ st, h = req("GET", "/v1/health/")
 print("health:", st)
 
 st, providers = req("GET", "/v1/providers/")
-ds = next((p for p in providers if p.get("name") == "deepseek"), None)
+ds = next((p for p in providers if p.get("name") in ("deepseek-api", "deepseek")), None)
 print("deepseek provider:", ds["id"] if ds else None)
 
 st, body = req("PATCH", f"/v1/providers/{ds['id']}/refresh")
@@ -32,5 +32,5 @@ st, models = req("GET", "/v1/models/")
 print("--- deepseek models registered ---")
 for m in models:
     hnd = m.get("handle", "")
-    if hnd.startswith("deepseek/"):
+    if hnd.startswith("deepseek-api/") or hnd.startswith("deepseek/"):
         print(" ", hnd, "| ctx:", m.get("context_window"), "| endpoint:", m.get("model_endpoint_type"))
