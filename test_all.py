@@ -79,15 +79,34 @@ if aid:
     except Exception as e:
         test("历史读取", False, str(e))
 
-# === 5. 模型切换（往返） ===
+# === 5. 模型切换（动态取 DeepSeek 模型 handle，往返） ===
 print("\n--- 5. 模型切换 ---")
 if aid:
-    # 切到 flash
+    # 从 Letta 已注册模型里找 DeepSeek 模型（provider 名 deepseek-api），不写死 handle
     try:
-        r = requests.patch(f"{BASE}/v1/agents/{aid}", json={"model":"openai-proxy/deepseek-flash"}, timeout=10)
-        test("切到 Flash", r.status_code==200, r.json()["llm_config"]["model"])
+        r = requests.get(f"{BASE}/v1/models/", timeout=5)
+        models = r.json() if r.status_code == 200 else []
+        ds_handles = [m["handle"] for m in models
+                      if m.get("handle","").startswith("deepseek-api/")]
+        fallback = [m["handle"] for m in models
+                    if m.get("handle","").startswith("deepseek/")]
+        pick = (ds_handles or fallback or [None])[0]
+        test("发现 DeepSeek 模型", bool(pick), (pick or "无，跳过切换"))
+        if pick:
+            try:
+                r = requests.patch(f"{BASE}/v1/agents/{aid}",
+                                   json={"model": pick}, timeout=10)
+                test("切换到 " + pick.split('/')[-1], r.status_code==200,
+                     r.json().get("llm_config",{}).get("model",""))
+                # 切回原模型
+                r3 = requests.patch(f"{BASE}/v1/agents/{aid}",
+                                    json={"model": model}, timeout=10)
+                test("切回原模型", r3.status_code==200,
+                     r3.json().get("llm_config",{}).get("model",""))
+            except Exception as e:
+                test("模型切换", False, str(e))
     except Exception as e:
-        test("切到 Flash", False, str(e))
+        test("模型切换", False, str(e))
 
 # === 6. 对话往返（实际发消息） ===
 print("\n--- 6. 对话往返（发'你好'） ---")
@@ -131,13 +150,15 @@ except Exception as e:
 # === 8. TTS ===
 print("\n--- 8. TTS ---")
 try:
-    import edge_tts, asyncio
+    import edge_tts
     async def tts():
         c = edge_tts.Communicate("测试", "zh-CN-XiaoxiaoNeural")
         await c.save(os.path.join(ROOT, "test_tts2.mp3"))
         return os.path.getsize(os.path.join(ROOT, "test_tts2.mp3"))
     size = asyncio.run(tts())
     test("edge-tts 生成", size > 1000, f"({size}B)")
+except ImportError:
+    test("edge-tts", False, "未安装（用 letta-server\\venv\\Scripts\\python.exe 运行，setup.ps1 已包含）")
 except Exception as e:
     test("TTS", False, str(e))
 
