@@ -22,12 +22,13 @@ def main():
     limit = int(sys.argv[1]) if len(sys.argv) > 1 else 100000
     agents = req('GET', '/v1/agents')
     for a in agents:
-        d = req('GET', '/v1/agents/' + a['id'])
-        for b in d['memory']['blocks']:
+        d = req('GET', '/v1/agents/' + a['id'] + '/core-memory/blocks')
+        blocks = d if isinstance(d, list) else d.get('blocks', [])
+        for b in blocks:
             if b['label'] in CORE_LABELS:
                 req('PATCH', '/v1/blocks/' + b['id'], {'limit': limit})
                 print('%-18s %-7s -> %s (当前 %s 字)' %
-                      (a['name'], b['label'], limit, len(b['value'])))
+                      (a['name'], b['label'], limit, len(b.get('value', ''))))
     print('done：核心记忆块上限已设为', limit)
 
 
