@@ -119,7 +119,7 @@ try:
             "管理面板": "admin-fab",
             "心情状态": "p-mood",
             "时间问候": "p-greet",
-            "模型切换": "RECOMMENDED",
+            "模型切换": "btn-switch",
         }
         for label, key in checks.items():
             if key in r.text: ok(f"注入-{label}")
