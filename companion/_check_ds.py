@@ -23,6 +23,11 @@ print("provider:", ds["id"] if ds else None, ds.get("provider_type") if ds else 
 if ds:
     st, body = req("POST", f"/v1/providers/{ds['id']}/check")
     print("check status:", st)
+    # 注意：check 响应可能包含 api_key，打印前先剔除敏感字段
+    if isinstance(body, dict):
+        for k in list(body.keys()):
+            if "key" in k.lower() or "secret" in k.lower():
+                body[k] = "***"
     print("check body:", json.dumps(body, ensure_ascii=False)[:1200])
     # refresh
     st, body = req("PATCH", f"/v1/providers/{ds['id']}/refresh")
