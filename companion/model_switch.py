@@ -3,7 +3,7 @@
 在“DeepSeek 云端（正式）”与“本地 qwen2.5:7b（测试）”之间切换AI 伴侣的大脑。
 记忆向量嵌入始终使用本地 bge-m3，不走云端、不花 token、不出本机。
 
-DeepSeek 必须走 OpenAI 兼容供应商（name=deepseek-api，handle 前缀 openai-proxy/），
+DeepSeek 必须走 OpenAI 兼容供应商（name=deepseek-api，handle 前缀 deepseek-api/），
 该通道才会下发记忆工具；旧的 deepseek 专用通道不传工具、无法写记忆，勿用。
 
 用法：
@@ -63,14 +63,15 @@ def setup_deepseek(key, variant="v4-pro"):
         print("刷新模型列表时提示：", e)
 
     handles = [m.handle for m in Letta(base_url=BASE, timeout=60).models.list()]
-    cand = [h for h in handles if h.startswith("openai-proxy/")]
+    # 优先 deepseek-api/（本仓库 setup 注册的 OpenAI 兼容通道），openai-proxy/ 为旧版兼容兜底
+    cand = [h for h in handles if h.startswith("deepseek-api/") or h.startswith("openai-proxy/")]
     print("OpenAI 兼容通道可用模型：", cand)
-    want = "deepseek-flash" if variant == "flash" else "deepseek-v4-pro"
+    # flash → 便宜的 deepseek-chat；v4-pro → 深度思考 deepseek-reasoner
+    want = "deepseek-reasoner" if variant == "v4-pro" else "deepseek-chat"
     prefer = [h for h in cand if h.endswith("/" + want)]
     if not prefer:
-        prefer = [h for h in cand if h.endswith("/deepseek-v4-pro")] or \
-                 [h for h in cand if h.endswith("/deepseek-flash")]
-    return (prefer or [DS_MODEL])[0]
+        prefer = cand or [DS_MODEL]
+    return prefer[0]
 
 
 def switch(handle):
