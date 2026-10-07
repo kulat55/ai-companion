@@ -306,9 +306,11 @@ class BackendManager:
             wait_for(lambda: not port_busy(VT_PORT), 15)
 
         env = os.environ.copy()
-        mingit = os.path.join(ROOT, r"MinGit\cmd")
-        bindir = os.path.join(ROOT, "bin")
-        env["PATH"] = mingit + os.pathsep + bindir + os.pathsep + env.get("PATH", "")
+        # 仅把确实存在的本地工具目录加入 PATH（MinGit / bin 为可选扩展，缺省不影响）
+        extra = [os.path.join(ROOT, r"MinGit\cmd"), os.path.join(ROOT, "bin")]
+        extra = [p for p in extra if os.path.isdir(p)]
+        if extra:
+            env["PATH"] = os.pathsep.join(extra) + os.pathsep + env.get("PATH", "")
 
         for attempt in range(1, MAX_ATTEMPTS + 1):
             self.log("正在启动 Live2D 桌宠（第 %d 次）…" % attempt, progress)
