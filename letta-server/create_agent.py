@@ -3,6 +3,7 @@
 # 重复运行会先删除同名 agent 再重建；新 agent id 写入 部署根目录\letta-server\AGENT_ID.txt。
 #
 # 使用前请按自己的喜好修改下面 PERSONA（人设）和 HUMAN（关于用户）的内容。
+import json
 from pathlib import Path
 from letta_client import Letta
 
@@ -10,8 +11,9 @@ BASE = "http://127.0.0.1:8283"
 ID_FILE = Path(__file__).resolve().parents[1] / "letta-server" / "AGENT_ID.txt"
 
 # 默认正式大脑走 DeepSeek（OpenAI 兼容通道，支持原生 function calling）；
-# 本地测试可改成 "ollama-local/qwen2.5:7b"。
-LLM_MODEL = "openai-proxy/deepseek-v4-pro"
+# 模型 handle 不写死：从 Letta 已注册模型里动态挑一个 DeepSeek 通道的（provider 名 deepseek-api）。
+# 本地测试可改成 "ollama-local/qwen2.5:7b-albedo"。
+LLM_MODEL = None  # 运行时自动选择
 EMBED_MODEL = "ollama-local/bge-m3:latest"
 
 # 本版 include_base_tools 会重复注册工具，创建后统一清空，只挂这套标准工具（每个一份）
@@ -43,8 +45,26 @@ HUMAN = """关于用户（持续补充、随时更新）：
 - 姓名、生日、喜好、作息等信息等用户告知后补充。"""
 
 
+def pick_llm_model():
+    """从 Letta 已注册模型里挑一个 DeepSeek 通道的 handle（deepseek-api/ 优先，openai-proxy/ 兜底）。"""
+    import urllib.request
+    try:
+        with urllib.request.urlopen(BASE + "/v1/models/", timeout=30) as r:
+            models = json.loads(r.read().decode())
+    except Exception:
+        models = []
+    cand = [m.get("handle", "") for m in models]
+    for pref in ("deepseek-api/", "openai-proxy/"):
+        hit = [h for h in cand if h.startswith(pref)]
+        if hit:
+            return hit[0]
+    return "openai-proxy/deepseek-v4-pro"
+
+
 def main():
     client = Letta(base_url=BASE, timeout=120.0)
+    llm_model = LLM_MODEL or pick_llm_model()
+    print("选用对话模型:", llm_model)
 
     for a in client.agents.list(limit=100):
         if a.name == "AI 伴侣":
@@ -58,7 +78,7 @@ def main():
             {"label": "persona", "value": PERSONA, "limit": 5000},
             {"label": "human", "value": HUMAN, "limit": 5000},
         ],
-        model=LLM_MODEL,
+        model=llm_model,
         embedding=EMBED_MODEL,
         include_base_tools=True,
         enable_sleeptime=True,
