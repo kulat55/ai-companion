@@ -13,6 +13,7 @@ from ctypes import wintypes
 import os
 import socket
 import subprocess
+import sys
 import threading
 import time
 
@@ -323,11 +324,23 @@ class BackendManager:
             if wait_for(lambda: vtuber_healthy() and port_busy(VT_PORT),
                         READY_TIMEOUT, 1.5):
                 self.log("Live2D 桌宠就绪", progress)
+                self._apply_frontend_patch()
                 return
             self.log("桌宠第 %d 次未就绪，重启…" % attempt, progress)
             self._kill_vtuber()
             wait_for(lambda: not port_busy(VT_PORT), 12)
         raise RuntimeError("Live2D 桌宠多次启动仍失败，见 vtuber.err.log")
+
+    def _apply_frontend_patch(self):
+        """把仓库自带的中性前端增强注入到 index.html（幂等，失败不影响主流程）。"""
+        try:
+            injector = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                    "inject_frontend.py")
+            subprocess.run([sys.executable, injector, VT_ROOT],
+                           capture_output=True, timeout=30,
+                           creationflags=CREATE_NO_WINDOW)
+        except Exception as e:
+            self.log("前端增强注入跳过: %s" % e)
 
     # ---------------- 进程清理 ----------------
     def _kill_letta(self):
