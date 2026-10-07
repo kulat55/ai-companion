@@ -33,7 +33,7 @@ character_config:
   conf_uid: 'ai_companion_001'
   live2d_model_name: 'mao_pro'  # 先用默认模型跑通，之后替换为AI 伴侣 Live2D
   character_name: 'AI 伴侣'
-  avatar: 'ai_companion.png'
+  avatar: 'mao.png'  # 使用上游默认头像；想换头像就放一张正方形图到 avatars\ 并把文件名填在这里
   human_name: '你'
 
   # ============== 提示词 ==============
