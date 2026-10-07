@@ -92,7 +92,7 @@ if (Test-Path $keyFile) {
 } else {
     Step "5/9 配置 DeepSeek API Key"
     Write-Host "  请到 https://platform.deepseek.com 创建 API Key，然后："
-    Write-Host "  (a) 把 key 粘贴到下面（回车确认，内容不会回显到屏幕）"
+    Write-Host "  (a) 把 key 粘贴到下面（回车确认）"
     Write-Host "  (b) 或手动创建 companion\deepseek_key.txt 后重新运行本脚本"
     $k = Read-Host "  请输入 DeepSeek API Key（sk-开头，直接回车=跳过稍后手动填）"
     if ($k -and $k.StartsWith('sk-')) {
