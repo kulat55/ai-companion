@@ -142,6 +142,7 @@ Ok "Letta 记忆大脑已就绪 (http://127.0.0.1:8283)"
 Step "7/9 打 DeepSeek 模型名补丁并注册 provider"
 & $lettaPy (Join-Path $ROOT 'companion\_patch_deepseek.py') 2>&1 | Select-Object -Last 2
 & $lettaPy (Join-Path $ROOT 'letta-server\setup_openai_ds.py') 2>&1 | Select-Object -Last 4
+if ($LASTEXITCODE -ne 0) { throw "DeepSeek provider 注册失败，请检查 deepseek_key.txt 后重试" }
 Ok "DeepSeek 接入完成"
 
 # ---------- 8. 创建智能体 ----------
