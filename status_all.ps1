@@ -20,9 +20,12 @@ else { Write-Host '[未启动] 内嵌数据库' -ForegroundColor Yellow }
 Row 'Letta 记忆大脑' 8283
 Row 'Live2D 桌宠' 12393
 
-$cfg = Get-Content (Join-Path $ROOT 'companion\config.json') -Raw -Encoding UTF8 | ConvertFrom-Json
-if ($cfg.enabled) { Write-Host '[已开启] QQ 主动消息开关' -ForegroundColor Green }
-else { Write-Host '[已关闭] QQ 主动消息开关' -ForegroundColor Yellow }
+$cfgPath = Join-Path $ROOT 'companion\config.json'
+if (Test-Path $cfgPath) {
+  $cfg = Get-Content $cfgPath -Raw -Encoding UTF8 | ConvertFrom-Json
+  if ($cfg.enabled) { Write-Host '[已开启] QQ 主动消息开关' -ForegroundColor Green }
+  else { Write-Host '[已关闭] QQ 主动消息开关' -ForegroundColor Yellow }
+} else { Write-Host '[未配置] companion\config.json 不存在（跑过 setup.ps1 会自动生成）' -ForegroundColor Yellow }
 $daemon = Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object { $_.CommandLine -like '*proactive_sender.py*' }
 if ($daemon) { Write-Host '[运行中] QQ 主动消息守护进程' -ForegroundColor Green }
 else { Write-Host '[未启动] QQ 主动消息守护进程' -ForegroundColor Yellow }
