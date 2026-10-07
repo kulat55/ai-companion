@@ -24,10 +24,18 @@ print("=" * 60)
 
 # === 1. 服务端口 ===
 print("\n--- 1. 服务端口 ---")
-test("PostgreSQL 55432", port_open(55432))
+pg_port = 55432
+try:
+    pf = os.path.join(ROOT, "pgdata", "PORT")
+    if os.path.isfile(pf):
+        pg_port = int(open(pf).read().strip())
+except Exception:
+    pass
+test(f"PostgreSQL {pg_port}", port_open(pg_port))
 test("Letta 8283", port_open(8283))
 test("VTuber 12393", port_open(12393))
-test("Ollama 11434", port_open(11434))
+# Ollama 仅本地模型需要；只用 DeepSeek 时不装/不运行属正常，不判失败
+print("  [注] Ollama 11434 为可选（仅本地模型模式需要），见第 7 节")
 
 # === 2. Letta Agent 管理 ===
 print("\n--- 2. Letta Agent ---")
