@@ -4,12 +4,12 @@
 用法：
   python manage_model.py avatar <图片文件名>
       把 Open-LLM-VTuber/avatars 下的某张图设为当前头像，例如：
-      python manage_model.py avatar albedo.png
+      python manage_model.py avatar ai_companion.png
 
   python manage_model.py install <模型目录> [模型英文名]
       把一个含 *.model3.json 的 Live2D 模型目录接入桌宠：
       自动复制到 live2d-models/<英文名>/、扫描动作与表情、登记 model_dict.json、并切换为当前模型。
-      例：python manage_model.py install "C:\模型文件夹\albedo_live2d" albedo
+      例：python manage_model.py install "C:\模型文件夹\my_live2d" my_model
 
   python manage_model.py use <模型英文名>
       仅把当前 Live2D 模型切换为 model_dict.json 里已登记的某个模型。
