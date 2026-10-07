@@ -216,4 +216,4 @@ A: PG 不是 HTTP 服务，健康灯以 Letta 在线为准（Letta 在线即 PG 
 
 ---
 
-**Made with ❤️ for 宇涵 and his AI 伴侣**
+**Made with ❤️ for kulat55 and his AI 伴侣**
