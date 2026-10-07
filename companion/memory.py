@@ -122,7 +122,7 @@ def cmd_passages(c, aid):
 def cmd_export(c, aid):
     os.makedirs(BACKUP_DIR, exist_ok=True)
     stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    out = os.path.join(BACKUP_DIR, f"albedo_memory_{stamp}.md")
+    out = os.path.join(BACKUP_DIR, f"companion_memory_{stamp}.md")
     lines = [f"# AI 伴侣记忆备份 {stamp}", ""]
     for label, b in get_blocks(c, aid).items():
         lines += [f"## 核心记忆·{label}", b.value or "", ""]
