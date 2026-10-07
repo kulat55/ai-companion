@@ -5,7 +5,7 @@
 #
 # 自动完成：
 #   1) 检查 git / python
-#   2) 创建 letta-server 虚拟环境并安装 Letta(0.16.8)+pgserver
+#   2) 创建 letta-server 虚拟环境并安装 Letta(0.16.8)+pgserver+edge-tts
 #   3) clone 上游 Open-LLM-VTuber 并安装其依赖
 #   4) 生成 companion\config.json（从模板）
 #   5) 提示填写 DeepSeek API Key
@@ -43,12 +43,12 @@ $lettaVenv = Join-Path $ROOT 'letta-server\venv'
 if (Test-Path (Join-Path $lettaVenv 'Scripts\python.exe')) {
     Ok "letta-server venv 已存在，跳过创建"
 } else {
-    Step "2/9 创建 Letta 虚拟环境并安装依赖（letta 0.16.8 / letta-client / pgserver，约几分钟）"
+    Step "2/9 创建 Letta 虚拟环境并安装依赖（letta 0.16.8 / letta-client / pgserver / edge-tts，约几分钟）"
     New-Item -ItemType Directory -Path (Join-Path $ROOT 'letta-server') -Force | Out-Null
     python -m venv $lettaVenv
     if (-not (Test-Path (Join-Path $lettaVenv 'Scripts\python.exe'))) { throw "venv 创建失败" }
     & (Join-Path $lettaVenv 'Scripts\python.exe') -m pip install --upgrade pip --quiet
-    & (Join-Path $lettaVenv 'Scripts\pip.exe') install "letta[server]==0.16.8" "letta-client==1.12.1" "pgserver" "requests" 2>&1 | Select-Object -Last 3
+    & (Join-Path $lettaVenv 'Scripts\pip.exe') install "letta[server]==0.16.8" "letta-client==1.12.1" "pgserver" "requests" "edge-tts" 2>&1 | Select-Object -Last 3
     if ($LASTEXITCODE -ne 0) { throw "letta 依赖安装失败，请检查网络后重试" }
 }
 $lettaPy = Join-Path $lettaVenv 'Scripts\python.exe'
