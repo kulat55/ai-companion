@@ -21,8 +21,8 @@ text = rep(
   character_name: 'Mao' # 将在群聊中使用，并显示为 AI 的名称。
   avatar: 'mao.png' # 建议使用正方形图像作为头像。将其保存到 avatars 文件夹中。留空则使用角色名称的首字母作为头像。
   human_name: 'Human' # 将在群聊中使用，并显示为人类的名称。""",
-    """  conf_name: 'albedo'
-  conf_uid: 'albedo_001'
+    """  conf_name: 'ai_companion'
+  conf_uid: 'ai_companion_001'
   live2d_model_name: 'mao_pro'  # 先用默认模型跑通，之后替换为AI 伴侣 Live2D
   character_name: 'AI 伴侣'
   avatar: 'mao.png'
