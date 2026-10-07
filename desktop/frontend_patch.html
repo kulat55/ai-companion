@@ -1,0 +1,113 @@
+<script id="ai-companion-patch">
+/* ============================================================
+   AI 伴侣 · 前端增强（中性模板，由 inject_frontend.py 自动注入）
+   提供：状态面板 / 心情气泡 / 问候气泡 / 一键诊断 / TTS 试听
+   注入位置：</body> 之前。重复注入安全（带 id 标记幂等）。
+   ============================================================ */
+(function () {
+  if (window.__aiCompanionPatch) return;
+  window.__aiCompanionPatch = true;
+
+  var doc = document;
+  function el(tag, cls, html) {
+    var e = doc.createElement(tag);
+    e.className = cls || '';
+    if (html) e.innerHTML = html;
+    return e;
+  }
+  function getJSON(url, cb) {
+    fetch(url, { method: 'GET' }).then(function (r) { return r.json(); })
+      .then(cb).catch(function () { cb(null); });
+  }
+
+  /* ---- 右下角悬浮按钮（admin-fab）---- */
+  var fab = el('button', 'admin-fab', '⚙');
+  fab.title = 'AI 伴侣 · 状态面板';
+  fab.style.cssText = 'position:fixed;right:20px;bottom:20px;z-index:99999;width:56px;height:56px;border-radius:50%;border:none;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;font-size:22px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.35);';
+  doc.body.appendChild(fab);
+
+  /* ---- 心情气泡（p-mood）---- */
+  var moods = ['心情不错～', '元气满满！', '想和你聊聊天', '安静地陪着你'];
+  var mi = 0;
+  var mood = el('div', 'p-mood', moods[0]);
+  mood.style.cssText = 'position:fixed;left:18px;top:18px;z-index:99998;background:rgba(0,0,0,.55);color:#fff;padding:6px 14px;border-radius:16px;font-size:13px;letter-spacing:1px;user-select:none;';
+  doc.body.appendChild(mood);
+  setInterval(function () { mi = (mi + 1) % moods.length; mood.textContent = moods[mi]; }, 30000);
+
+  /* ---- 问候气泡（p-greet）---- */
+  var greet = el('div', 'p-greet', '');
+  greet.style.cssText = 'position:fixed;right:96px;top:18px;z-index:99998;background:rgba(0,0,0,.55);color:#fff;padding:6px 14px;border-radius:16px;font-size:13px;user-select:none;';
+  doc.body.appendChild(greet);
+  function refreshGreet() {
+    var h = new Date().getHours();
+    var g = h < 6 ? '夜深了，还没睡吗' : h < 12 ? '早上好呀～' : h < 14 ? '中午好' : h < 18 ? '下午好' : '晚上好';
+    greet.textContent = g + '，我是你的 AI 伴侣';
+  }
+  refreshGreet();
+  setInterval(refreshGreet, 60000);
+
+  /* ---- 状态面板 ---- */
+  var panel = el('div', 'admin-panel', '');
+  panel.style.cssText = 'display:none;position:fixed;right:20px;bottom:92px;z-index:99997;width:260px;background:#fff;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.25);padding:16px;font-size:13px;color:#333;';
+  panel.innerHTML =
+    '<b>AI 伴侣 · 状态面板</b>' +
+    '<div id="p-status" style="margin:10px 0;line-height:1.9;color:#555;"></div>' +
+    '<button id="btn-diagnose" style="width:100%;padding:8px;border:none;border-radius:8px;background:#667eea;color:#fff;cursor:pointer;">一键诊断</button>' +
+    '<button id="btn-tts" style="width:100%;margin-top:8px;padding:8px;border:none;border-radius:8px;background:#764ba2;color:#fff;cursor:pointer;">🔊 试听她的声音</button>';
+  doc.body.appendChild(panel);
+
+  function refreshStatus() {
+    var s = doc.getElementById('p-status');
+    if (!s) return;
+    var checks = [
+      ['Letta 记忆大脑', 'http://127.0.0.1:8283/v1/health/'],
+      ['Ollama', 'http://127.0.0.1:11434/api/ps']
+    ];
+    var html = '';
+    checks.forEach(function (c) { html += c[0] + ': <span class="st">检查中…</span><br>'; });
+    s.innerHTML = html;
+    checks.forEach(function (c) {
+      fetch(c[1], { method: 'GET' }).then(function (r) {
+        s.innerHTML = s.innerHTML.replace('检查中…', r.ok ? '<span style="color:#2e7d32;">正常</span>' : '<span style="color:#c62828;">异常</span>');
+      }).catch(function () {
+        s.innerHTML = s.innerHTML.replace('检查中…', '<span style="color:#c62828;">异常</span>');
+      });
+    });
+  }
+
+  fab.addEventListener('click', function () {
+    var show = panel.style.display === 'none';
+    panel.style.display = show ? 'block' : 'none';
+    if (show) refreshStatus();
+  });
+
+  doc.getElementById('btn-diagnose').addEventListener('click', function () {
+    var b = doc.getElementById('btn-diagnose');
+    b.textContent = '诊断中…'; b.disabled = true;
+    getJSON('http://127.0.0.1:8283/v1/health/', function (h) {
+      getJSON('http://127.0.0.1:11434/api/ps', function (o) {
+        b.textContent = '一键诊断'; b.disabled = false;
+        var msg = 'Letta 记忆大脑: ' + (h ? '正常' : '异常') + '\nOllama: ' + (o ? '正常' : '异常');
+        if (o && o.models && o.models.length) msg += '（已加载 ' + o.models[0].name + '）';
+        else if (o) msg += '（空闲）';
+        alert(msg);
+      });
+    });
+  });
+
+  doc.getElementById('btn-tts').addEventListener('click', function () {
+    var b = doc.getElementById('btn-tts');
+    b.textContent = '播放中…'; b.disabled = true;
+    try {
+      var u = new SpeechSynthesisUtterance('你好呀，我是你的 AI 伴侣，很高兴见到你～');
+      u.lang = 'zh-CN';
+      u.onend = function () { b.textContent = '🔊 试听她的声音'; b.disabled = false; };
+      u.onerror = function () { b.textContent = '🔊 试听她的声音'; b.disabled = false; };
+      speechSynthesis.cancel();
+      speechSynthesis.speak(u);
+    } catch (e) {
+      b.textContent = '🔊 试听她的声音'; b.disabled = false;
+    }
+  });
+})();
+</script>
