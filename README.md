@@ -34,7 +34,7 @@
 │   ├── manage_model.py          # Live2D 模型管理
 │   ├── proactive_sender.py      # 定时主动发 QQ 守护进程
 │   ├── config.example.json      # 配置模板（复制为 config.json 后填写）
-│   ├── Modelfile.qwen-albedo    # 本地 Ollama 模型定义（加大上下文防空回复）
+│   ├── Modelfile.qwen7b        # 本地 Ollama 模型定义（加大上下文防空回复）
 │   └── *.ps1                    # QQ 开关 / 守护启停脚本
 ├── desktop/backend.py           # 一键启动编排后端（PG→Letta→桌宠全自动）
 │   ├── inject_frontend.py       # 自动注入网页管理面板（幂等，零改动）
@@ -191,10 +191,10 @@ powershell -File companion\stop_proactive.ps1   # 停掉守护
 **Q: 她回复空内容 / 一句话都不说？**
 A: 本地模型上下文窗口太小会"空回复"。使用本仓库的 Modelfile 创建模型：
 ```powershell
-ollama create qwen2.5:7b-albedo  -f companion\Modelfile.qwen-albedo     # 7b，num_ctx 6144，适配 4GB 显存
-ollama create qwen2.5:3b-albedo  -f companion\Modelfile.qwen3b-albedo   # 3b，更省显存，num_ctx 8192
+ollama create qwen2.5:7b-companion  -f companion\Modelfile.qwen7b     # 7b，num_ctx 6144，适配 4GB 显存
+ollama create qwen2.5:3b-companion  -f companion\Modelfile.qwen3b     # 3b，更省显存，num_ctx 8192
 ```
-创建后用 `python companion\model_switch.py local` 切到本地模型（默认 qwen2.5:7b-albedo；若只用 3b，请把 `model_switch.py` 里的 `LOCAL_MODEL` 改为 `ollama-local/qwen2.5:3b-albedo`）。
+创建后用 `python companion\model_switch.py local` 切到本地模型（默认 qwen2.5:7b-companion；若只用 3b，请把 `model_switch.py` 里的 `LOCAL_MODEL` 改为 `ollama-local/qwen2.5:3b-companion`）。
 
 **Q: 网页管理面板报 "Failed to fetch"？**
 A: 这是 Letta 的 CORS 问题。setup.ps1 启动 Letta 时已带 `ACCEPTABLE_ORIGINS`；若手动启动 Letta，必须加上：
