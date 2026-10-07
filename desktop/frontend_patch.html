@@ -201,7 +201,7 @@
     s.innerHTML = '加载中…';
     mainAgent(function (aid) {
       if (!aid) { s.innerHTML = '未找到智能体'; return; }
-      getJSON(LETTA + '/v1/agents/' + aid + '/memory/blocks', function (blocks) {
+      getJSON(LETTA + '/v1/agents/' + aid + '/core-memory/blocks', function (blocks) {
         var list = blocks || [];
         if (list.length && !Array.isArray(list)) list = list.blocks || [];
         var core = list.filter(function (b) { return b && (b.label === 'persona' || b.label === 'human'); });
