@@ -29,11 +29,11 @@ system_config:
 
 # 默认角色的配置
 character_config:
-  conf_name: 'albedo'
-  conf_uid: 'albedo_001'
+  conf_name: 'ai_companion'
+  conf_uid: 'ai_companion_001'
   live2d_model_name: 'mao_pro'  # 先用默认模型跑通，之后替换为AI 伴侣 Live2D
   character_name: 'AI 伴侣'
-  avatar: 'albedo.png'
+  avatar: 'ai_companion.png'
   human_name: '你'
 
   # ============== 提示词 ==============
