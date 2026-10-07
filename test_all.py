@@ -51,6 +51,8 @@ try:
         r2 = requests.get(f"{BASE}/v1/agents/{aid}", timeout=5)
         ag = r2.json()
         model = ag["llm_config"]["model"]
+        # PATCH 需要完整 handle（GET 的 model 字段是短名，直接回切会 404）
+        orig_handle = ag["llm_config"].get("handle") or model
         ep = ag["llm_config"]["model_endpoint"]
         test("当前模型", True, f"{model} @ {ep}")
     else:
@@ -106,9 +108,9 @@ if aid:
                                    json={"model": pick}, timeout=10)
                 test("切换到 " + pick.split('/')[-1], r.status_code==200,
                      r.json().get("llm_config",{}).get("model",""))
-                # 切回原模型
+                # 切回原模型（用完整 handle，短名会导致 404）
                 r3 = requests.patch(f"{BASE}/v1/agents/{aid}",
-                                    json={"model": model}, timeout=10)
+                                    json={"model": orig_handle}, timeout=10)
                 test("切回原模型", r3.status_code==200,
                      r3.json().get("llm_config",{}).get("model",""))
             except Exception as e:
