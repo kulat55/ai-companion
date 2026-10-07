@@ -27,10 +27,18 @@ print("=" * 60)
 
 # 1. 端口检测
 print("\n--- 1. 服务端口 ---")
-ports = {"PostgreSQL": 55432, "Letta": 8283, "VTuber": 12393, "Ollama": 11434}
+pg_port = 55432
+try:
+    pf = ROOT / "pgdata" / "PORT"
+    if pf.is_file():
+        pg_port = int(pf.read_text().strip())
+except Exception:
+    pass
+ports = {"PostgreSQL": pg_port, "Letta": 8283, "VTuber": 12393}
 for name, port in ports.items():
     if test_port(name, port): ok(f"{name} ({port})")
     else: fail(f"{name} ({port})", "端口未监听")
+print("  [注] Ollama 11434 为可选（仅本地模型需要），见第 3 节")
 
 # 2. Letta API
 print("\n--- 2. Letta API ---")
@@ -40,7 +48,9 @@ try:
         agents = r.json()
         ok(f"Letta agents API", f"({len(agents)} 个 agent)")
         if agents:
-            aid = agents[0]["id"]
+            # 跳过 Letta 自带的 sleeptime 系统 agent，测主 agent
+            main = [a for a in agents if "sleeptime" not in a.get("name", "")]
+            aid = (main[0] if main else agents[0])["id"]
             # 获取 agent 详情
             r2 = requests.get(f"http://127.0.0.1:8283/v1/agents/{aid}", timeout=5)
             if r2.status_code == 200:
