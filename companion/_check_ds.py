@@ -14,9 +14,9 @@ def req(method, path, body=None):
     except urllib.error.HTTPError as e:
         return e.code, e.read().decode()
 
-# 找 deepseek provider
+# 找 deepseek provider（本仓库注册名 deepseek-api；兼容旧名 deepseek）
 st, providers = req("GET", "/v1/providers/")
-ds = next((p for p in providers if p.get("name") == "deepseek"), None)
+ds = next((p for p in providers if p.get("name") in ("deepseek-api", "deepseek")), None)
 print("provider:", ds["id"] if ds else None, ds.get("provider_type") if ds else None)
 
 # check
