@@ -196,7 +196,7 @@ A: 本地模型上下文窗口太小会"空回复"。使用本仓库的 Modelfil
 ollama create qwen2.5:7b-companion  -f companion\Modelfile.qwen7b     # 7b，num_ctx 6144，适配 4GB 显存
 ollama create qwen2.5:3b-companion  -f companion\Modelfile.qwen3b     # 3b，更省显存，num_ctx 8192
 ```
-创建后用 `python companion\model_switch.py local` 切到本地模型（默认 qwen2.5:7b-companion；若只用 3b，请把 `model_switch.py` 里的 `LOCAL_MODEL` 改为 `ollama-local/qwen2.5:3b-companion`）。
+创建后用 `& $py companion\model_switch.py local` 切到本地模型（默认 qwen2.5:7b-companion；若只用 3b，请把 `model_switch.py` 里的 `LOCAL_MODEL` 改为 `ollama-local/qwen2.5:3b-companion`）。注意：所有 `model_switch.py` 命令都要用 Letta 的 venv Python（即上文 `$py`），系统 Python 没装 letta_client 会报错。
 
 **Q: 网页管理面板报 "Failed to fetch"？**
 A: 这是 Letta 的 CORS 问题。setup.ps1 启动 Letta 时已带 `ACCEPTABLE_ORIGINS`；若手动启动 Letta，必须加上：
