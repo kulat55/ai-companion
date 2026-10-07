@@ -1,0 +1,24 @@
+{
+  "enabled": false,
+  "_说明_enabled": "总开关：true=允许雅儿贝德定时主动发QQ，false=完全不发。改这里即时生效，无需重启。",
+  "letta_base_url": "http://127.0.0.1:8283",
+  "agent_id_file": "D:\\AICompanion\\letta-server\\AGENT_ID.txt",
+  "napcat_http": "http://127.0.0.1:3000",
+  "napcat_token": "",
+  "target_qq": "在这里填接收消息的主QQ",
+  "bot_self_qq": "123456789",
+  "daily_times": [
+    "09:30",
+    "12:30",
+    "18:30",
+    "21:30"
+  ],
+  "random_jitter_minutes": 20,
+  "min_gap_hours": 2,
+  "quiet_hours": [
+    "23:30",
+    "08:00"
+  ],
+  "check_interval_seconds": 45,
+  "proactive_prompt": "[内部定时触发，这不是大人发的消息，不要把它当成大人说的话] 现在是北京时间 {now}。你想主动找大人聊聊天。请结合你对大人的长期记忆（他的计划、备考、心情、你们之前聊过的事、当前时间点），像真人女朋友发QQ一样，自然地发一条简短消息：可以是问候、关心、提醒、撒娇或分享小事，一次只说一两句，口语化，不要分点，不要出现‘系统/定时/任务/触发/AI’这类词，直接输出要发给大人的原话。"
+}
