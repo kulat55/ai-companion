@@ -12,7 +12,7 @@ ID_FILE = Path(__file__).resolve().parents[1] / "letta-server" / "AGENT_ID.txt"
 
 # 默认正式大脑走 DeepSeek（OpenAI 兼容通道，支持原生 function calling）；
 # 模型 handle 不写死：从 Letta 已注册模型里动态挑一个 DeepSeek 通道的（provider 名 deepseek-api）。
-# 本地测试可改成 "ollama-local/qwen2.5:7b-albedo"。
+# 本地测试可改成 "ollama-local/qwen2.5:7b-companion"。
 LLM_MODEL = None  # 运行时自动选择
 EMBED_MODEL = "ollama-local/bge-m3:latest"
 
