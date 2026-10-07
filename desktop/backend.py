@@ -316,7 +316,7 @@ class BackendManager:
         for attempt in range(1, MAX_ATTEMPTS + 1):
             self.log("正在启动 Live2D 桌宠（第 %d 次）…" % attempt, progress)
             vf = open(VT_LOG, "a", encoding="utf-8")
-            ve = open(VT_ERR, "a", encoding="utf-")
+            ve = open(VT_ERR, "a", encoding="utf-8")
             p = subprocess.Popen([VT_PY, RUN_SERVER], cwd=VT_ROOT, env=env,
                                  stdin=subprocess.DEVNULL, stdout=vf, stderr=ve,
                                  creationflags=CREATE_NO_WINDOW)
