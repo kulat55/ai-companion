@@ -1,7 +1,7 @@
 ﻿#!/usr/bin/env python3
 """每天更新本地天气到 Letta 的 human memory block。
 
-城市从 companion/config.json 的 "city" 字段读取（默认"苏州"），
+城市：从 companion/config.json 的 "city" 字段读取（必填，未填写则退出），
 agent id 自动从 letta-server/AGENT_ID.txt 读取。
 
 设置 Windows 任务计划每天运行一次即可实现"她每天感知天气"：
@@ -15,13 +15,15 @@ import requests
 
 ROOT = os.path.dirname(os.path.abspath(__file__))  # 部署根目录（仓库根）
 
-# 城市：优先 config.json 的 city 字段
-city = "苏州"
+# 城市：必填，从 config.json 的 city 字段读取（不提供默认值，避免写入错误位置）
+city = ""
 try:
     cfg = json.load(open(os.path.join(ROOT, "companion", "config.json"), encoding="utf-8"))
-    city = cfg.get("city") or city
+    city = (cfg.get("city") or "").strip()
 except Exception:
     pass
+if not city or city.startswith("在这里填"):
+    sys.exit("请在 companion/config.json 的 city 字段填写你所在的城市后重试")
 
 # agent id：从 AGENT_ID.txt 自动读取
 AID = open(os.path.join(ROOT, "letta-server", "AGENT_ID.txt"), encoding="utf-8").read().strip()
