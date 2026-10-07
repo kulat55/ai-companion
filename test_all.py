@@ -56,7 +56,7 @@ except Exception as e:
 print("\n--- 3. 核心记忆 ---")
 if aid:
     try:
-        r = requests.get(f"{BASE}/v1/agents/{aid}/memory/blocks", timeout=5)
+        r = requests.get(f"{BASE}/v1/agents/{aid}/core-memory/blocks", timeout=5)
         blocks = r.json()
         if isinstance(blocks, dict): blocks = blocks.get("blocks", list(blocks.values()))
         test("获取记忆块", len(blocks) >= 1, f"({len(blocks)} 块)")
