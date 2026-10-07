@@ -1,10 +1,10 @@
-# AICompanion · AI 伴侣 AI 伴侣
+# AICompanion · AI 伴侣
 
 一个基于 [Open-LLM-VTuber](https://github.com/Open-LLM-VTuber/Open-LLM-VTuber) + [Letta](https://github.com/letta-ai/letta) + Ollama 深度定制的 **本地 AI 伴侣** 项目。
 
-她是一个住在你电脑里的"女大学生"——有完整人设记忆、能感知时间和天气、会主动找你聊天（QQ）、有可视化桌宠和网页管理面板。
+她是一个住在你电脑里的 AI 角色——有完整人设记忆（人格可自定义）、能感知时间和天气、会主动找你聊天（QQ）、有可视化桌宠和网页管理面板。
 
-> ⚠️ 本仓库为**定制层开源**：上游 Open-LLM-VTuber 本体请从官方仓库获取（见下方安装说明），本仓库只包含定制脚本、配置模板与使用手册。
+> ⚠️ 本仓库为**定制层开源**：运行时会自动 clone 上游 Open-LLM-VTuber，本仓库只包含定制脚本、配置模板与使用手册。
 
 ---
 
@@ -13,7 +13,7 @@
 | 能力 | 说明 |
 |---|---|
 | 🧠 **长期记忆** | 基于 Letta 的三层记忆（核心记忆 / 对话历史 / 归档检索），她记得你的一切 |
-| 👤 **拟人化人格** | 完整人设（女大学生"苏雅"），从出生到大学的记忆背景，说话像真人发微信 |
+| 👤 **拟人化人格** | 完整人设模板（可自定义角色背景、性格、说话方式），说话像真人发微信 |
 | 🕐 **时间感知** | System Prompt 自动注入当前时间，她知道现在是几点、该干嘛 |
 | 🌦️ **天气感知** | 每日定时抓取本地天气写入记忆，她知道今天冷不冷、要不要带伞 |
 | 💬 **对话模型可选** | DeepSeek Flash（便宜快）/ DeepSeek R1（深度思考）/ 本地 Ollama qwen2.5（离线备用） |
@@ -27,17 +27,22 @@
 ## 📁 项目结构
 
 ```
-AICompanion/                     # 你的本地部署根目录（本仓库为定制层）
+<部署根>/                          # 本仓库 clone 到任意目录即可（如 D:\AICompanion）
 ├── companion/                   # 控制脚本（记忆 / 模型切换 / 主动消息 / QQ 控制）
 │   ├── memory.py                # 记忆查看 / 编辑 / 导出
 │   ├── model_switch.py          # 模型切换（deepseek / local）
 │   ├── manage_model.py          # Live2D 模型管理
 │   ├── proactive_sender.py      # 定时主动发 QQ 守护进程
-│   ├── config.example.json      # 主动消息配置模板（复制为 config.json 后填写）
+│   ├── config.example.json      # 配置模板（复制为 config.json 后填写）
 │   ├── Modelfile.qwen-albedo    # 本地 Ollama 模型定义（8k 上下文防空回复）
 │   └── *.ps1                    # QQ 开关 / 守护启停脚本
-├── update_weather.py            # 每日更新天气到记忆
-├── apply_conf.py                # 将当前 agent 配置写入 conf.yaml
+├── desktop/backend.py           # 一键启动编排后端（PG→Letta→桌宠全自动）
+├── letta-server/                # 记忆服务脚本
+│   ├── init_pg.py               # 内嵌 PostgreSQL 初始化
+│   ├── create_agent.py          # 创建 AI 伴侣智能体（可自定义人设）
+│   └── setup_openai_ds.py       # 注册 DeepSeek provider
+├── conf.yaml.example            # Open-LLM-VTuber 配置模板（安装时自动填入 agent id）
+├── setup.ps1                    # ★ 一键安装（clone 上游/装依赖/起服务/建智能体）
 ├── start_all.ps1 / stop_all.ps1 # 一键启停全部服务
 ├── status_all.ps1               # 查看服务状态
 ├── test_all.py                  # 全面功能测试脚本
@@ -48,72 +53,59 @@ AICompanion/                     # 你的本地部署根目录（本仓库为定
 
 ---
 
-## 🚀 快速开始
+## 🚀 快速开始（下载即用）
 
 ### 前置依赖
 
 - Windows 10/11
 - [Git](https://git-scm.com/download/win)
-- Python 3.10+（建议用 uv 或 venv）
-- [Ollama](https://ollama.com/download)（可选，本地模型需要）
-- DeepSeek API Key（推荐，云端模型需要）
+- Python 3.10+（安装时勾选 **Add to PATH**）
+- [Ollama](https://ollama.com/download)（本地嵌入/离线模型需要，强烈建议）
+- DeepSeek API Key（云端对话大脑，https://platform.deepseek.com 创建）
 
-### 1. 获取上游项目
+### 第 1 步：clone 本仓库
 
 ```powershell
-git clone https://github.com/Open-LLM-VTuber/Open-LLM-VTuber.git
+git clone https://github.com/kulat55/ai-companion.git D:\AICompanion
+cd D:\AICompanion
 ```
 
-### 2. 安装后端服务
-
-**Letta（记忆大脑，端口 8283）**
+### 第 2 步：一键安装
 
 ```powershell
-# 需要 PostgreSQL（端口 55432）
-pip install letta
-# 或参考 Letta 官方文档：https://docs.letta.com
+powershell -ExecutionPolicy Bypass -File setup.ps1
 ```
 
-启动 Letta 时**必须**带上 CORS 白名单，否则网页管理面板无法访问：
+脚本会自动完成（全程约 5-15 分钟，视网速）：
+1. 创建 Letta 虚拟环境并安装依赖（letta 0.16.8 / pgserver）
+2. clone 上游 Open-LLM-VTuber 并安装其依赖
+3. 生成 `companion\config.json`（模板）
+4. 提示输入 DeepSeek API Key（也可手动创建 `companion\deepseek_key.txt`）
+5. 初始化内嵌 PostgreSQL → 启动 Letta 记忆大脑
+6. 注册 DeepSeek 模型通道
+7. 创建"AI 伴侣"智能体（人设在 `letta-server\create_agent.py` 里自定义）
+8. 生成 `Open-LLM-VTuber\conf.yaml`（自动填入 agent id）
+
+### 第 3 步：配置（编辑 companion\config.json）
+
+| 字段 | 说明 |
+|---|---|
+| `bot_self_qq` | 发消息的 QQ 小号（仅主动消息功能需要） |
+| `target_qq` | 接收消息的主 QQ 号 |
+| `city` | 天气感知的城市，如 "苏州" |
+| `daily_times` | 主动发消息的时间点 |
+
+### 第 4 步：启动
 
 ```powershell
-$env:LETTA_DIR = "$PWD\letta-data"
-$env:LETTA_PG_URI = "postgresql+pg8000://letta:letta@127.0.0.1:55432/letta"
-$env:ACCEPTABLE_ORIGINS = "http://localhost:12393,http://127.0.0.1:12393"
-letta server --type rest --host localhost --port 8283
-```
-
-**Open-LLM-VTuber（前端 + 桌宠，端口 12393）**
-
-```powershell
-cd Open-LLM-VTuber
-pip install -r requirements.txt
-python run_server.py
-```
-
-### 3. 配置 DeepSeek 密钥
-
-创建 `companion/deepseek_key.txt`，粘贴你的 API Key：
-
-```powershell
-New-Item -ItemType File companion\deepseek_key.txt
-notepad companion\deepseek_key.txt   # 粘贴 sk-xxxx 后保存
-```
-
-### 4. 配置主动消息（可选，QQ）
-
-```powershell
-Copy-Item companion\config.example.json companion\config.json
-notepad companion\config.json   # 填你的 QQ 号（bot_self_qq / target_qq）
-```
-
-### 5. 一键启停
-
-```powershell
-.\start_all.ps1     # 启动全部服务（PG → Letta → VTuber → Ollama）
+.\start_all.ps1     # 启动全部服务（PG → Letta → 桌宠）
 .\status_all.ps1    # 查看服务状态
 .\stop_all.ps1      # 停止全部服务
 ```
+
+然后浏览器打开 **http://localhost:12393** 开始聊天。
+
+> 提示：所有脚本都用相对路径定位（`$PSScriptRoot` / `Path(__file__)`），**clone 到任意目录都能运行**，不依赖固定盘符。
 
 ---
 
@@ -163,10 +155,19 @@ powershell -File companion\stop_proactive.ps1   # 停掉守护
 ### 天气自动更新
 
 ```powershell
-# 修改 update_weather.py 里的城市名（默认苏州），然后设置 Windows 任务计划每天运行：
-#   程序: python.exe
-#   参数: D:\AICompanion\update_weather.py
-#   时间: 每天 07:30
+# 1. 在 companion\config.json 里设置 city（如 "苏州"）
+# 2. 设置 Windows 任务计划，每天 07:30 运行：
+#    程序:   <部署根>\letta-server\venv\Scripts\python.exe
+#    参数:   <部署根>\update_weather.py
+#    起始于: <部署根>
+```
+
+### 自定义她的人格
+
+编辑 `letta-server\create_agent.py` 里的 `PERSONA`（人设）和 `HUMAN`（关于用户）段落，然后重新运行：
+
+```powershell
+& $py letta-server\create_agent.py
 ```
 
 ---

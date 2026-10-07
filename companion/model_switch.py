@@ -19,8 +19,9 @@ import urllib.request
 from letta_client import Letta
 
 BASE = "http://127.0.0.1:8283"
-AGENT_ID_FILE = r"D:\AICompanion\letta-server\AGENT_ID.txt"
-KEY_FILE = r"D:\AICompanion\companion\deepseek_key.txt"
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # 部署根目录（仓库根）
+AGENT_ID_FILE = os.path.join(ROOT, "letta-server", "AGENT_ID.txt")
+KEY_FILE = os.path.join(ROOT, "companion", "deepseek_key.txt")
 LOCAL_MODEL = "ollama-local/qwen2.5:7b-albedo"
 DS_NAME = "deepseek-api"
 DS_BASE = "https://api.deepseek.com/v1"

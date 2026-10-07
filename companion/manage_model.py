@@ -9,7 +9,7 @@
   python manage_model.py install <模型目录> [模型英文名]
       把一个含 *.model3.json 的 Live2D 模型目录接入桌宠：
       自动复制到 live2d-models/<英文名>/、扫描动作与表情、登记 model_dict.json、并切换为当前模型。
-      例：python manage_model.py install "D:\\下载\\albedo_live2d" albedo
+      例：python manage_model.py install "C:\模型文件夹\albedo_live2d" albedo
 
   python manage_model.py use <模型英文名>
       仅把当前 Live2D 模型切换为 model_dict.json 里已登记的某个模型。
@@ -20,7 +20,7 @@ import os
 import shutil
 import sys
 
-ROOT = r"D:\AICompanion\Open-LLM-VTuber"
+ROOT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "Open-LLM-VTuber")
 CONF = os.path.join(ROOT, "conf.yaml")
 DICT = os.path.join(ROOT, "model_dict.json")
 MODELS_DIR = os.path.join(ROOT, "live2d-models")

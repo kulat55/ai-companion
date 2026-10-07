@@ -1,14 +1,14 @@
-# ============================================================
-# AI 伴侣 AI 伴侣 · 一键启动（脚本方式）
+﻿# ============================================================
+# AI 伴侣 · 一键启动（脚本方式）
 # 直接交给经过完整可靠性加固的 backend.py：
 #   数据库(55432) -> Letta 记忆大脑(8283) -> Live2D 桌宠(12393) 全自动
 # powershell -ExecutionPolicy Bypass -File start_all.ps1
 #
 # 说明：本窗口开着 = 桌宠在运行；关闭本窗口 / Ctrl+C = 自动停止全部后台服务。
-#       想要托盘后台常驻、开机自启，请直接双击桌面的「AI 伴侣桌宠」程序（推荐）。
+#       想要托盘后台常驻、开机自启，可另行打包桌面程序。
 # ============================================================
-$ROOT    = 'D:\AICompanion'
-$PY      = Join-Path $ROOT 'desktop\venv\Scripts\python.exe'
+$ROOT    = $PSScriptRoot
+$PY      = Join-Path $ROOT 'letta-server\venv\Scripts\python.exe'
 $BACKEND = Join-Path $ROOT 'desktop\backend.py'
 
 # 让 backend 以本窗口为“父”：窗口关闭时父看门自动清理全部服务（Job Object 兜底，零孤儿）

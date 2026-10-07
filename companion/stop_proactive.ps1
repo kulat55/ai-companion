@@ -1,5 +1,5 @@
 ﻿# 停止主动消息守护进程
-$pidf = 'D:\AICompanion\companion\proactive.pid'
+$pidf = Join-Path $PSScriptRoot 'proactive.pid'
 if (Test-Path $pidf) {
     $procId = Get-Content $pidf -ErrorAction SilentlyContinue
     if ($procId -and (Get-Process -Id $procId -ErrorAction SilentlyContinue)) {

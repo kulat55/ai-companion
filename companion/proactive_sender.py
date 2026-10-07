@@ -5,7 +5,7 @@ AI 伴侣 · QQ 主动消息守护进程
 - 调本地 Letta，让AI 伴侣基于长期记忆自己生成一句话
 - 通过本机 NapCat(OneBot HTTP) 私聊发给 target_qq
 - 开关 / 时间 / 接收号全部热更新：直接改 config.json 即可，无需重启
-启动：  D:\\AICompanion\\letta-server\\venv\\Scripts\\python.exe proactive_sender.py
+启动：  <部署根>\letta-server\venv\Scripts\python.exe proactive_sender.py
 """
 import json
 import os
@@ -77,7 +77,11 @@ def letta_say(cfg):
     """让 Letta 里的AI 伴侣生成一条主动消息，返回纯文本"""
     from letta_client import Letta
 
-    agent_id = open(cfg["agent_id_file"], encoding="utf-8").read().strip()
+    # agent_id_file 支持相对路径（相对部署根目录）或绝对路径
+    _aid_file = cfg["agent_id_file"]
+    if not os.path.isabs(_aid_file):
+        _aid_file = os.path.join(os.path.dirname(BASE), _aid_file)
+    agent_id = open(_aid_file, encoding="utf-8").read().strip()
     client = Letta(base_url=cfg["letta_base_url"], timeout=300.0)
     now = datetime.now()
     stamp = f"{WEEK_CN[now.weekday()]} {now:%H:%M}"

@@ -21,8 +21,9 @@ from datetime import datetime
 from letta_client import Letta
 
 BASE = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(BASE)  # 部署根目录（仓库根）
 BASE_URL = "http://127.0.0.1:8283"
-AGENT_ID_FILE = r"D:\AICompanion\letta-server\AGENT_ID.txt"
+AGENT_ID_FILE = os.path.join(ROOT, "letta-server", "AGENT_ID.txt")
 BACKUP_DIR = os.path.join(BASE, "backups")
 
 

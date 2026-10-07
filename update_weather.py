@@ -1,22 +1,43 @@
 ﻿#!/usr/bin/env python3
-"""每天更新苏州天气到 Letta 的 human memory block"""
-import requests, sys, os
+"""每天更新本地天气到 Letta 的 human memory block。
 
-AID = "agent-3e6c3a72-c372-4f16-ac83-08143c0ebe63"
+城市从 companion/config.json 的 "city" 字段读取（默认"苏州"），
+agent id 自动从 letta-server/AGENT_ID.txt 读取。
+
+设置 Windows 任务计划每天运行一次即可实现"她每天感知天气"：
+  程序: <部署根>/letta-server/venv/Scripts/python.exe
+  参数: <部署根>/update_weather.py
+"""
+import json
+import os
+import sys
+import requests
+
+ROOT = os.path.dirname(os.path.abspath(__file__))  # 部署根目录（仓库根）
+
+# 城市：优先 config.json 的 city 字段
+city = "苏州"
+try:
+    cfg = json.load(open(os.path.join(ROOT, "companion", "config.json"), encoding="utf-8"))
+    city = cfg.get("city") or city
+except Exception:
+    pass
+
+# agent id：从 AGENT_ID.txt 自动读取
+AID = open(os.path.join(ROOT, "letta-server", "AGENT_ID.txt"), encoding="utf-8").read().strip()
 BASE = "http://127.0.0.1:8283"
 
-# 获取苏州天气
+# 获取天气（wttr.in 无需 key）
 try:
-    r = requests.get("https://wttr.in/Suzhou?format=j1", timeout=10)
+    r = requests.get(f"https://wttr.in/{city}?format=j1", timeout=10)
     d = r.json()
     today = d["weather"][0]
     desc = today["hourly"][4]["weatherDesc"][0]["value"]
-    temp = today["avgtempC"]
     mint = today["mintempC"]
     maxt = today["maxtempC"]
     humidity = today["hourly"][4]["humidity"]
     date = today["date"]
-    weather_text = f"苏州今天({date})：{desc}，{mint}~{maxt}°C，湿度{humidity}%"
+    weather_text = f"{city}今天({date})：{desc}，{mint}~{maxt}°C，湿度{humidity}%"
 except Exception as e:
     weather_text = f"天气查询失败: {e}"
 
@@ -40,4 +61,3 @@ requests.patch(
     timeout=10
 )
 print("weather updated to memory")
-

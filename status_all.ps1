@@ -1,4 +1,5 @@
-# 查看AI 伴侣各组件运行状态
+﻿# 查看AI 伴侣各组件运行状态
+$ROOT = $PSScriptRoot
 function Test-Port($p) {
   try {
     $c = New-Object System.Net.Sockets.TcpClient
@@ -13,13 +14,13 @@ function Row($name, $port) {
   else { Write-Host ("[未启动] {0,-22} 端口 {1}" -f $name, $port) -ForegroundColor Yellow }
 }
 Row 'Ollama 本地模型' 11434
-$pgf = 'D:\AICompanion\pgdata\PORT'
+$pgf = Join-Path $ROOT 'pgdata\PORT'
 if (Test-Path $pgf) { Row '内嵌数据库(PostgreSQL)' ((Get-Content $pgf).Trim()) }
 else { Write-Host '[未启动] 内嵌数据库' -ForegroundColor Yellow }
 Row 'Letta 记忆大脑' 8283
 Row 'Live2D 桌宠' 12393
 
-$cfg = Get-Content 'D:\AICompanion\companion\config.json' -Raw -Encoding UTF8 | ConvertFrom-Json
+$cfg = Get-Content (Join-Path $ROOT 'companion\config.json') -Raw -Encoding UTF8 | ConvertFrom-Json
 if ($cfg.enabled) { Write-Host '[已开启] QQ 主动消息开关' -ForegroundColor Green }
 else { Write-Host '[已关闭] QQ 主动消息开关' -ForegroundColor Yellow }
 $daemon = Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object { $_.CommandLine -like '*proactive_sender.py*' }

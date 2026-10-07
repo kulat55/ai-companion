@@ -1,6 +1,7 @@
 ﻿# 启动主动消息守护进程（后台常驻，开机后需要时手动运行一次即可）
-$py   = 'D:\AICompanion\letta-server\venv\Scripts\python.exe'
-$work = 'D:\AICompanion\companion'
+$ROOT = Split-Path $PSScriptRoot -Parent
+$py   = Join-Path $ROOT 'letta-server\venv\Scripts\python.exe'
+$work = $PSScriptRoot
 $pidf = Join-Path $work 'proactive.pid'
 if (Test-Path $pidf) {
     $old = Get-Content $pidf -ErrorAction SilentlyContinue

@@ -2,8 +2,9 @@
 # 基于中文模板生成 Open-LLM-VTuber 的正式 conf.yaml（接上本地 Letta AI 伴侣）
 from pathlib import Path
 
-CONF = Path(r"D:\AICompanion\Open-LLM-VTuber\conf.yaml")
-AGENT_ID = Path(r"D:\AICompanion\letta-server\AGENT_ID.txt").read_text(encoding="utf-8").strip()
+ROOT = Path(__file__).resolve().parent  # 部署根目录（仓库根）
+CONF = ROOT / "Open-LLM-VTuber" / "conf.yaml"
+AGENT_ID = (ROOT / "letta-server" / "AGENT_ID.txt").read_text(encoding="utf-8").strip()
 
 text = CONF.read_text(encoding="utf-8")
 
