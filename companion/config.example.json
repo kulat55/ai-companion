@@ -3,7 +3,7 @@
   "_说明_enabled": "总开关：true=允许AI 伴侣定时主动发QQ，false=完全不发。改这里即时生效，无需重启。",
   "letta_base_url": "http://127.0.0.1:8283",
   "agent_id_file": "letta-server\\AGENT_ID.txt",
-  "city": "苏州",
+  "city": "在这里填你所在的城市（用于天气感知）",
   "napcat_http": "http://127.0.0.1:3000",
   "napcat_token": "",
   "target_qq": "在这里填接收消息的主QQ",
