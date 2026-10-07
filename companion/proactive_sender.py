@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-雅儿贝德 · QQ 主动消息守护进程
+AI 伴侣 · QQ 主动消息守护进程
 - 按 config.json 的 daily_times（带随机偏移）定时唤醒
-- 调本地 Letta，让雅儿贝德基于长期记忆自己生成一句话
+- 调本地 Letta，让AI 伴侣基于长期记忆自己生成一句话
 - 通过本机 NapCat(OneBot HTTP) 私聊发给 target_qq
 - 开关 / 时间 / 接收号全部热更新：直接改 config.json 即可，无需重启
 启动：  D:\\AICompanion\\letta-server\\venv\\Scripts\\python.exe proactive_sender.py
@@ -74,7 +74,7 @@ def planned_minutes(t, today_key):
 
 
 def letta_say(cfg):
-    """让 Letta 里的雅儿贝德生成一条主动消息，返回纯文本"""
+    """让 Letta 里的AI 伴侣生成一条主动消息，返回纯文本"""
     from letta_client import Letta
 
     agent_id = open(cfg["agent_id_file"], encoding="utf-8").read().strip()
@@ -148,7 +148,7 @@ def main():
                         # 到点（允许 60 分钟内补发），且满足最小间隔
                         if plan <= cur_min <= plan + 60:
                             if time.time() - st.get("last_send_ts", 0) >= gap_sec:
-                                log(f"到点({t})，唤醒雅儿贝德生成主动消息…")
+                                log(f"到点({t})，唤醒AI 伴侣生成主动消息…")
                                 try:
                                     text = letta_say(cfg)
                                 except Exception as e:

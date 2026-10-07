@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-在“DeepSeek 云端（正式）”与“本地 qwen2.5:7b（测试）”之间切换雅儿贝德的大脑。
+在“DeepSeek 云端（正式）”与“本地 qwen2.5:7b（测试）”之间切换AI 伴侣的大脑。
 记忆向量嵌入始终使用本地 bge-m3，不走云端、不花 token、不出本机。
 
 DeepSeek 必须走 OpenAI 兼容供应商（name=deepseek-api，handle 前缀 openai-proxy/），
@@ -107,7 +107,7 @@ def main():
             raise SystemExit("没有有效 DeepSeek key：作为参数传入，或写入 companion\\deepseek_key.txt")
         handle = setup_deepseek(key, variant)
         switch(handle)
-        print("完成：雅儿贝德现在由 DeepSeek(%s) 驱动，记忆仍全部保存在本机。" % variant)
+        print("完成：AI 伴侣现在由 DeepSeek(%s) 驱动，记忆仍全部保存在本机。" % variant)
     else:
         print(__doc__)
 

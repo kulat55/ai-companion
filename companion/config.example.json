@@ -1,6 +1,6 @@
 {
   "enabled": false,
-  "_说明_enabled": "总开关：true=允许雅儿贝德定时主动发QQ，false=完全不发。改这里即时生效，无需重启。",
+  "_说明_enabled": "总开关：true=允许AI 伴侣定时主动发QQ，false=完全不发。改这里即时生效，无需重启。",
   "letta_base_url": "http://127.0.0.1:8283",
   "agent_id_file": "D:\\AICompanion\\letta-server\\AGENT_ID.txt",
   "napcat_http": "http://127.0.0.1:3000",

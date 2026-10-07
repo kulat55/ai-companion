@@ -1,4 +1,4 @@
-# AICompanion · 雅儿贝德 AI 伴侣
+# AICompanion · AI 伴侣 AI 伴侣
 
 一个基于 [Open-LLM-VTuber](https://github.com/Open-LLM-VTuber/Open-LLM-VTuber) + [Letta](https://github.com/letta-ai/letta) + Ollama 深度定制的 **本地 AI 伴侣** 项目。
 
@@ -216,4 +216,4 @@ A: PG 不是 HTTP 服务，健康灯以 Letta 在线为准（Letta 在线即 PG 
 
 ---
 
-**Made with ❤️ for 宇涵 and his 雅儿贝德**
+**Made with ❤️ for 宇涵 and his AI 伴侣**

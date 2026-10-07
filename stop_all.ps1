@@ -1,4 +1,4 @@
-﻿# 关闭雅儿贝德全部本地服务（桌宠程序 / backend 编排 / Letta / 内嵌数据库 / QQ守护）。
+# 关闭AI 伴侣全部本地服务（桌宠程序 / backend 编排 / Letta / 内嵌数据库 / QQ守护）。
 # 数据都在 D 盘，不会丢。
 
 # 1) 先停 backend.py 编排进程：它一终止，Job Object 会自动回收它拉起的全部服务（最干净）
@@ -12,7 +12,7 @@ if ($backends) {
 } else { Write-Host 'backend 编排进程未在运行' -ForegroundColor Yellow }
 
 # 2) 若桌宠 exe（托盘程序）还在，一并关闭
-$pet = Get-Process '雅儿贝德桌宠' -ErrorAction SilentlyContinue
+$pet = Get-Process 'AI 伴侣桌宠' -ErrorAction SilentlyContinue
 if ($pet) { $pet | Stop-Process -Force -ErrorAction SilentlyContinue; Write-Host '已关闭桌宠程序' -ForegroundColor Green }
 
 # 3) 兜底：按命令行清理任何残留服务

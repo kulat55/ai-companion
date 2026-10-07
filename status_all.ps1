@@ -1,4 +1,4 @@
-﻿# 查看雅儿贝德各组件运行状态
+# 查看AI 伴侣各组件运行状态
 function Test-Port($p) {
   try {
     $c = New-Object System.Net.Sockets.TcpClient

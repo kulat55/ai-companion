@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-桌宠外观管理工具（雅儿贝德 AI 伴侣）
+桌宠外观管理工具（AI 伴侣 AI 伴侣）
 用法：
   python manage_model.py avatar <图片文件名>
       把 Open-LLM-VTuber/avatars 下的某张图设为当前头像，例如：

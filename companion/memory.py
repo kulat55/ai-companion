@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-雅儿贝德记忆管理工具（记忆全部存在你本机，可随时查看 / 修改 / 导出）
+AI 伴侣记忆管理工具（记忆全部存在你本机，可随时查看 / 修改 / 导出）
 用法（在本目录用 Letta 的 python 运行）：
   python memory.py show                查看她的“核心记忆”（persona 人格 + human 关于你）
   python memory.py edit human          用记事本打开“关于你”的记忆，改完保存关闭即生效
@@ -91,7 +91,7 @@ def cmd_history(c, aid, n=20):
         mt = getattr(m, "message_type", "")
         if mt not in ("user_message", "assistant_message"):
             continue
-        who = "大人" if mt == "user_message" else "雅儿贝德"
+        who = "大人" if mt == "user_message" else "AI 伴侣"
         print(f"[{getattr(m,'date','')}] {who}：{_msg_text(m)}")
 
 
@@ -103,7 +103,7 @@ def cmd_search(c, aid, kw):
             continue
         t = _msg_text(m)
         if kw in t:
-            who = "大人" if m.message_type == "user_message" else "雅儿贝德"
+            who = "大人" if m.message_type == "user_message" else "AI 伴侣"
             print(f"[{getattr(m,'date','')}] {who}：{t}")
             hit += 1
     print(f"——命中 {hit} 条——")
@@ -122,14 +122,14 @@ def cmd_export(c, aid):
     os.makedirs(BACKUP_DIR, exist_ok=True)
     stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     out = os.path.join(BACKUP_DIR, f"albedo_memory_{stamp}.md")
-    lines = [f"# 雅儿贝德记忆备份 {stamp}", ""]
+    lines = [f"# AI 伴侣记忆备份 {stamp}", ""]
     for label, b in get_blocks(c, aid).items():
         lines += [f"## 核心记忆·{label}", b.value or "", ""]
     lines += ["## 对话记录", ""]
     for m in c.agents.messages.list(agent_id=aid, limit=10000):
         if getattr(m, "message_type", "") not in ("user_message", "assistant_message"):
             continue
-        who = "大人" if m.message_type == "user_message" else "雅儿贝德"
+        who = "大人" if m.message_type == "user_message" else "AI 伴侣"
         lines.append(f"- [{getattr(m,'date','')}] {who}：{_msg_text(m)}")
     open(out, "w", encoding="utf-8").write("\n".join(lines))
     print("已导出：", out)
