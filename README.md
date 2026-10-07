@@ -34,7 +34,7 @@
 │   ├── manage_model.py          # Live2D 模型管理
 │   ├── proactive_sender.py      # 定时主动发 QQ 守护进程
 │   ├── config.example.json      # 配置模板（复制为 config.json 后填写）
-│   ├── Modelfile.qwen-albedo    # 本地 Ollama 模型定义（8k 上下文防空回复）
+│   ├── Modelfile.qwen-albedo    # 本地 Ollama 模型定义（加大上下文防空回复）
 │   └── *.ps1                    # QQ 开关 / 守护启停脚本
 ├── desktop/backend.py           # 一键启动编排后端（PG→Letta→桌宠全自动）
 │   ├── inject_frontend.py       # 自动注入网页管理面板（幂等，零改动）
@@ -79,7 +79,7 @@ powershell -ExecutionPolicy Bypass -File setup.ps1
 ```
 
 脚本会自动完成（全程约 5-15 分钟，视网速）：
-1. 创建 Letta 虚拟环境并安装依赖（letta 0.16.8 / pgserver）
+1. 创建 Letta 虚拟环境并安装依赖（letta 0.16.8 / pgserver / edge-tts）
 2. clone 上游 Open-LLM-VTuber 并安装其依赖
 3. 生成 `companion\config.json`（模板）
 4. 提示输入 DeepSeek API Key（也可手动创建 `companion\deepseek_key.txt`）
@@ -115,14 +115,16 @@ powershell -ExecutionPolicy Bypass -File setup.ps1
 
 ### 网页聊天
 
-打开 <http://localhost:12393>，左下角 FAB 按钮打开管理面板。
+打开 <http://localhost:12393>，右下角 ⚙ 悬浮按钮打开管理面板（自动注入，无需额外配置）。
 
 ### 管理面板功能
 
-- **状态**：服务健康灯（记忆数据库/记忆大脑/桌宠）、Ollama 显存、她上次说话时间、一键诊断、试听声音
-- **切换模型**：DeepSeek Flash（省钱）/ DeepSeek R1（深度思考）/ 本地 qwen（离线）
-- **核心记忆**：直接编辑"人格"和"关于你"两个记忆块，Ctrl+S 保存
-- **对话历史**：搜索 / 分页查看所有聊天记录
+- **状态**：服务健康检查（Letta 记忆大脑 / Ollama）、一键诊断、TTS 试听
+- **模型**：下拉切换对话模型（DeepSeek / 本地 Ollama qwen），实时生效
+- **记忆**：直接编辑"人格"和"关于你"两个核心记忆块，一键保存
+- **历史**：查看最近 20 条对话记录
+
+> 完整管理能力（记忆导出/检索、模型状态详情、主动消息）见下方命令行脚本。
 
 ### 记忆操作（命令行）
 
@@ -177,7 +179,7 @@ powershell -File companion\stop_proactive.ps1   # 停掉守护
 ## 🧪 测试
 
 ```powershell
-python test_all.py
+& $py test_all.py     # $py = "<部署根>\letta-server\venv\Scripts\python.exe"
 ```
 
 覆盖：服务端口、Letta API、记忆读写、对话往返（发消息验证不空回复）、TTS、前端页面完整性。全绿 = 一切正常。
@@ -192,7 +194,7 @@ A: 本地模型上下文窗口太小会"空回复"。使用本仓库的 Modelfil
 ollama create qwen2.5:7b-albedo  -f companion\Modelfile.qwen-albedo     # 7b，num_ctx 6144，适配 4GB 显存
 ollama create qwen2.5:3b-albedo  -f companion\Modelfile.qwen3b-albedo   # 3b，更省显存，num_ctx 8192
 ```
-创建后用 `python companion\model_switch.py local` 切到本地模型。
+创建后用 `python companion\model_switch.py local` 切到本地模型（默认 qwen2.5:7b-albedo；若只用 3b，请把 `model_switch.py` 里的 `LOCAL_MODEL` 改为 `ollama-local/qwen2.5:3b-albedo`）。
 
 **Q: 网页管理面板报 "Failed to fetch"？**
 A: 这是 Letta 的 CORS 问题。setup.ps1 启动 Letta 时已带 `ACCEPTABLE_ORIGINS`；若手动启动 Letta，必须加上：
