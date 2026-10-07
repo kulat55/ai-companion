@@ -34,7 +34,8 @@
 │   ├── manage_model.py          # Live2D 模型管理
 │   ├── proactive_sender.py      # 定时主动发 QQ 守护进程
 │   ├── config.example.json      # 配置模板（复制为 config.json 后填写）
-│   ├── Modelfile.qwen7b        # 本地 Ollama 模型定义（加大上下文防空回复）
+│   ├── Modelfile.qwen7b        # 本地 Ollama 模型定义（7b，加大上下文防空回复）
+│   ├── Modelfile.qwen3b        # 本地 Ollama 模型定义（3b，更省显存）
 │   └── *.ps1                    # QQ 开关 / 守护启停脚本
 ├── desktop/backend.py           # 一键启动编排后端（PG→Letta→桌宠全自动）
 │   ├── inject_frontend.py       # 自动注入网页管理面板（幂等，零改动）
@@ -79,6 +80,7 @@ powershell -ExecutionPolicy Bypass -File setup.ps1
 ```
 
 脚本会自动完成（全程约 5-15 分钟，视网速）：
+0. 检查 git / python 前置工具
 1. 创建 Letta 虚拟环境并安装依赖（letta 0.16.8 / pgserver / edge-tts）
 2. clone 上游 Open-LLM-VTuber 并安装其依赖
 3. 生成 `companion\config.json`（模板）
