@@ -3,6 +3,8 @@
 import requests, time, sys, os, json, subprocess, threading
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parent  # 部署根目录（仓库根）
+
 PASS = 0; FAIL = 0; WARN = 0
 def ok(name, msg=""):
     global PASS; PASS += 1; print(f"  [PASS] {name} {msg}")
@@ -97,7 +99,7 @@ try:
     import edge_tts, asyncio
     async def tts_test():
         c = edge_tts.Communicate("测试语音", "zh-CN-XiaoxiaoNeural")
-        out = "D:/AICompanion/test_tts_check.mp3"
+        out = str(ROOT / "test_tts_check.mp3")
         await c.save(out)
         return os.path.getsize(out)
     size = asyncio.run(tts_test())

@@ -187,12 +187,16 @@ python test_all.py
 **Q: 她回复空内容 / 一句话都不说？**
 A: 本地模型上下文窗口太小会"空回复"。使用本仓库的 Modelfile 创建模型：
 ```powershell
-ollama create qwen2.5:7b-albedo -f companion\Modelfile.qwen-albedo
+ollama create qwen2.5:7b-albedo  -f companion\Modelfile.qwen-albedo     # 7b，num_ctx 6144，适配 4GB 显存
+ollama create qwen2.5:3b-albedo  -f companion\Modelfile.qwen3b-albedo   # 3b，更省显存，num_ctx 8192
 ```
-（已设 `num_ctx 6144`，适配 4GB 显存机器）
+创建后用 `python companion\model_switch.py local` 切到本地模型。
 
 **Q: 网页管理面板报 "Failed to fetch"？**
-A: Letta 启动时漏了 `ACCEPTABLE_ORIGINS`，按上文重启即可。
+A: 这是 Letta 的 CORS 问题。setup.ps1 启动 Letta 时已带 `ACCEPTABLE_ORIGINS`；若手动启动 Letta，必须加上：
+```powershell
+$env:ACCEPTABLE_ORIGINS = "http://localhost:12393,http://127.0.0.1:12393,http://localhost:8283,http://127.0.0.1:8283"
+```
 
 **Q: 桌宠模式看不到聊天文字？**
 A: 桌宠模式（`?pet=1`）刻意隐藏了左栏，用完整网页 `http://localhost:12393` 查看。

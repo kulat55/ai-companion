@@ -5,6 +5,7 @@ import requests, time, sys, os, json, socket, asyncio
 BASE = "http://127.0.0.1:8283"
 VTUBER = "http://127.0.0.1:12393"
 OLLAMA = "http://127.0.0.1:11434"
+ROOT = os.path.dirname(os.path.abspath(__file__))  # 部署根目录（仓库根）
 
 results = []
 def test(name, ok, detail=""):
@@ -133,8 +134,8 @@ try:
     import edge_tts, asyncio
     async def tts():
         c = edge_tts.Communicate("测试", "zh-CN-XiaoxiaoNeural")
-        await c.save("D:/AICompanion/test_tts2.mp3")
-        return os.path.getsize("D:/AICompanion/test_tts2.mp3")
+        await c.save(os.path.join(ROOT, "test_tts2.mp3"))
+        return os.path.getsize(os.path.join(ROOT, "test_tts2.mp3"))
     size = asyncio.run(tts())
     test("edge-tts 生成", size > 1000, f"({size}B)")
 except Exception as e:

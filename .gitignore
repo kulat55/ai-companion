@@ -1,0 +1,41 @@
+# ============================================================
+# AI 伴侣 · Git 忽略规则
+# 保护隐私与运行时数据：这些文件【绝不能】提交到 GitHub
+# ============================================================
+
+# --- 密钥与私人配置 ---
+companion/deepseek_key.txt        # DeepSeek API 密钥
+companion/config.json             # 个人配置（QQ号/城市/时间）
+companion/state.json
+companion/proactive.pid
+companion/backups/                # 记忆导出备份（含隐私）
+letta-server/AGENT_ID.txt
+
+# --- 运行时数据（记忆本体） ---
+letta-data/                       # Letta 记忆数据库
+pgdata/                           # PostgreSQL 数据（记忆本体）
+Open-LLM-VTuber/chat_history/     # 对话历史
+napcat/                           # QQ 协议框架（含登录态）
+
+# --- 上游项目（独立仓库，勿嵌套提交） ---
+Open-LLM-VTuber/                  # 由 setup.ps1 自动 clone
+
+# --- Python 虚拟环境 ---
+venv/
+.venv/
+desktop/venv/
+letta-server/venv/
+Open-LLM-VTuber/.venv/
+
+# --- 日志与临时文件 ---
+*.log
+*.err
+*.out
+*.mp3
+*.pid
+test_tts*.mp3
+
+# --- 系统文件 ---
+Thumbs.db
+Desktop.ini
+.DS_Store

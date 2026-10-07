@@ -92,7 +92,7 @@ def cmd_history(c, aid, n=20):
         mt = getattr(m, "message_type", "")
         if mt not in ("user_message", "assistant_message"):
             continue
-        who = "大人" if mt == "user_message" else "AI 伴侣"
+        who = "你" if mt == "user_message" else "AI 伴侣"
         print(f"[{getattr(m,'date','')}] {who}：{_msg_text(m)}")
 
 
@@ -104,7 +104,7 @@ def cmd_search(c, aid, kw):
             continue
         t = _msg_text(m)
         if kw in t:
-            who = "大人" if m.message_type == "user_message" else "AI 伴侣"
+            who = "你" if m.message_type == "user_message" else "AI 伴侣"
             print(f"[{getattr(m,'date','')}] {who}：{t}")
             hit += 1
     print(f"——命中 {hit} 条——")
@@ -130,7 +130,7 @@ def cmd_export(c, aid):
     for m in c.agents.messages.list(agent_id=aid, limit=10000):
         if getattr(m, "message_type", "") not in ("user_message", "assistant_message"):
             continue
-        who = "大人" if m.message_type == "user_message" else "AI 伴侣"
+        who = "你" if m.message_type == "user_message" else "AI 伴侣"
         lines.append(f"- [{getattr(m,'date','')}] {who}：{_msg_text(m)}")
     open(out, "w", encoding="utf-8").write("\n".join(lines))
     print("已导出：", out)
