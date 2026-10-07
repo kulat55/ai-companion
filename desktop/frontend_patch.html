@@ -1,14 +1,18 @@
 <script id="ai-companion-patch">
 /* ============================================================
    AI 伴侣 · 前端增强（中性模板，由 inject_frontend.py 自动注入）
-   提供：状态面板 / 心情气泡 / 问候气泡 / 一键诊断 / TTS 试听
+   功能：状态检查 / 一键诊断 / TTS 试听 / 模型切换 / 核心记忆编辑 / 对话历史
    注入位置：</body> 之前。重复注入安全（带 id 标记幂等）。
+   依赖：Open-LLM-VTuber 后端(12393)、Letta(8283)。CORS 由 ACCEPTABLE_ORIGINS 放行。
    ============================================================ */
 (function () {
   if (window.__aiCompanionPatch) return;
   window.__aiCompanionPatch = true;
 
   var doc = document;
+  var LETTA = 'http://127.0.0.1:8283';
+  var TAB_STYLE = 'padding:5px 10px;margin-right:4px;border:none;border-radius:6px;background:#eee;color:#555;cursor:pointer;font-size:12px;';
+  var BTN = 'width:48%;padding:8px;border:none;border-radius:8px;color:#fff;cursor:pointer;';
   function el(tag, cls, html) {
     var e = doc.createElement(tag);
     e.className = cls || '';
@@ -19,10 +23,26 @@
     fetch(url, { method: 'GET' }).then(function (r) { return r.json(); })
       .then(cb).catch(function () { cb(null); });
   }
+  function postJSON(url, body, cb) {
+    fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    }).then(function (r) { return r.json(); }).then(cb)
+      .catch(function () { cb(null); });
+  }
+  function patchJSON(url, body, cb) {
+    fetch(url, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    }).then(function (r) { return r.json(); }).then(cb)
+      .catch(function () { cb(null); });
+  }
 
   /* ---- 右下角悬浮按钮（admin-fab）---- */
   var fab = el('button', 'admin-fab', '⚙');
-  fab.title = 'AI 伴侣 · 状态面板';
+  fab.title = 'AI 伴侣 · 管理面板';
   fab.style.cssText = 'position:fixed;right:20px;bottom:20px;z-index:99999;width:56px;height:56px;border-radius:50%;border:none;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;font-size:22px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.35);';
   doc.body.appendChild(fab);
 
@@ -46,25 +66,51 @@
   refreshGreet();
   setInterval(refreshGreet, 60000);
 
-  /* ---- 状态面板 ---- */
+  /* ---- 管理面板 ---- */
   var panel = el('div', 'admin-panel', '');
-  panel.style.cssText = 'display:none;position:fixed;right:20px;bottom:92px;z-index:99997;width:260px;background:#fff;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.25);padding:16px;font-size:13px;color:#333;';
+  panel.style.cssText = 'display:none;position:fixed;right:20px;bottom:92px;z-index:99997;width:300px;max-height:70vh;overflow:auto;background:#fff;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.25);padding:14px;font-size:13px;color:#333;';
   panel.innerHTML =
-    '<b>AI 伴侣 · 状态面板</b>' +
-    '<div id="p-status" style="margin:10px 0;line-height:1.9;color:#555;"></div>' +
-    '<button id="btn-diagnose" style="width:100%;padding:8px;border:none;border-radius:8px;background:#667eea;color:#fff;cursor:pointer;">一键诊断</button>' +
-    '<button id="btn-tts" style="width:100%;margin-top:8px;padding:8px;border:none;border-radius:8px;background:#764ba2;color:#fff;cursor:pointer;">🔊 试听她的声音</button>';
+    '<b>AI 伴侣 · 管理面板</b>' +
+    '<div style="margin:8px 0;">' +
+    '  <button data-tab="status" class="adm-tab" style="' + TAB_STYLE + 'background:#667eea;color:#fff;">状态</button>' +
+    '  <button data-tab="model" class="adm-tab" style="' + TAB_STYLE + '">模型</button>' +
+    '  <button data-tab="memory" class="adm-tab" style="' + TAB_STYLE + '">记忆</button>' +
+    '  <button data-tab="history" class="adm-tab" style="' + TAB_STYLE + '">历史</button>' +
+    '</div>' +
+    '<div id="adm-status"></div>' +
+    '<div id="adm-model" style="display:none;"></div>' +
+    '<div id="adm-memory" style="display:none;"></div>' +
+    '<div id="adm-history" style="display:none;"></div>';
   doc.body.appendChild(panel);
 
+  function showTab(name) {
+    ['status', 'model', 'memory', 'history'].forEach(function (t) {
+      doc.getElementById('adm-' + t).style.display = (t === name) ? 'block' : 'none';
+    });
+    panel.querySelectorAll('.adm-tab').forEach(function (b) {
+      b.style.background = (b.getAttribute('data-tab') === name) ? '#667eea' : '#eee';
+      b.style.color = (b.getAttribute('data-tab') === name) ? '#fff' : '#555';
+    });
+    if (name === 'status') refreshStatus();
+    if (name === 'model') loadModels();
+    if (name === 'memory') loadMemory();
+    if (name === 'history') loadHistory();
+  }
+  panel.querySelectorAll('.adm-tab').forEach(function (b) {
+    b.addEventListener('click', function () { showTab(b.getAttribute('data-tab')); });
+  });
+
+  /* ---- 状态页 ---- */
   function refreshStatus() {
-    var s = doc.getElementById('p-status');
-    if (!s) return;
+    var s = doc.getElementById('adm-status');
     var checks = [
-      ['Letta 记忆大脑', 'http://127.0.0.1:8283/v1/health/'],
+      ['Letta 记忆大脑', LETTA + '/v1/health/'],
       ['Ollama', 'http://127.0.0.1:11434/api/ps']
     ];
     var html = '';
     checks.forEach(function (c) { html += c[0] + ': <span class="st">检查中…</span><br>'; });
+    html += '<button id="btn-diagnose" style="' + BTN + 'background:#667eea;">一键诊断</button> ' +
+            '<button id="btn-tts" style="' + BTN + 'background:#764ba2;">🔊 试听她的声音</button>';
     s.innerHTML = html;
     checks.forEach(function (c) {
       fetch(c[1], { method: 'GET' }).then(function (r) {
@@ -73,41 +119,152 @@
         s.innerHTML = s.innerHTML.replace('检查中…', '<span style="color:#c62828;">异常</span>');
       });
     });
+    doc.getElementById('btn-diagnose').addEventListener('click', function () {
+      var b = doc.getElementById('btn-diagnose');
+      b.textContent = '诊断中…'; b.disabled = true;
+      getJSON(LETTA + '/v1/health/', function (h) {
+        getJSON('http://127.0.0.1:11434/api/ps', function (o) {
+          b.textContent = '一键诊断'; b.disabled = false;
+          var msg = 'Letta 记忆大脑: ' + (h ? '正常' : '异常') + '\nOllama: ' + (o ? '正常' : '异常');
+          if (o && o.models && o.models.length) msg += '（已加载 ' + o.models[0].name + '）';
+          else if (o) msg += '（空闲）';
+          alert(msg);
+        });
+      });
+    });
+    doc.getElementById('btn-tts').addEventListener('click', function () {
+      var b = doc.getElementById('btn-tts');
+      b.textContent = '播放中…'; b.disabled = true;
+      try {
+        var u = new SpeechSynthesisUtterance('你好呀，我是你的 AI 伴侣，很高兴见到你～');
+        u.lang = 'zh-CN';
+        u.onend = function () { b.textContent = '🔊 试听她的声音'; b.disabled = false; };
+        u.onerror = function () { b.textContent = '🔊 试听她的声音'; b.disabled = false; };
+        speechSynthesis.cancel();
+        speechSynthesis.speak(u);
+      } catch (e) {
+        b.textContent = '🔊 试听她的声音'; b.disabled = false;
+      }
+    });
+  }
+
+  /* ---- 模型页 ---- */
+  function mainAgent(cb) {
+    getJSON(LETTA + '/v1/agents/', function (agents) {
+      if (!agents || !agents.length) { cb(null); return; }
+      var main = agents.filter(function (a) { return (a.name || '').indexOf('sleeptime') < 0; });
+      cb((main[0] || agents[0]).id);
+    });
+  }
+  function loadModels() {
+    var s = doc.getElementById('adm-model');
+    s.innerHTML = '加载中…';
+    mainAgent(function (aid) {
+      if (!aid) { s.innerHTML = '未找到智能体，请先完成 setup.ps1'; return; }
+      getJSON(LETTA + '/v1/models/', function (models) {
+        var handles = (models || []).map(function (m) { return m.handle || ''; })
+          .filter(function (h) { return h && (h.indexOf('deepseek') >= 0 || h.indexOf('ollama') >= 0); });
+        if (!handles.length) { s.innerHTML = '无可切换模型'; return; }
+        var opt = handles.map(function (h) { return '<option value="' + h + '">' + h + '</option>'; }).join('');
+        s.innerHTML = '<div>当前对话模型：<b id="cur-model">读取中…</b></div>' +
+          '<div style="margin:8px 0;">切换到：<select id="sel-model" style="width:70%;padding:4px;">' + opt + '</select></div>' +
+          '<button id="btn-switch" style="' + BTN + 'background:#667eea;">切换模型</button>' +
+          '<div id="sw-msg" style="margin-top:6px;color:#555;"></div>';
+        getJSON(LETTA + '/v1/agents/' + aid, function (ag) {
+          if (ag && ag.llm_config) {
+            doc.getElementById('cur-model').textContent = ag.llm_config.model || ag.llm_config.handle || '?';
+          }
+        });
+        doc.getElementById('btn-switch').addEventListener('click', function () {
+          var h = doc.getElementById('sel-model').value;
+          var b = doc.getElementById('btn-switch');
+          b.disabled = true; b.textContent = '切换中…';
+          patchJSON(LETTA + '/v1/agents/' + aid, { model: h }, function (r) {
+            b.disabled = false; b.textContent = '切换模型';
+            var msg = doc.getElementById('sw-msg');
+            if (r && r.llm_config) {
+              msg.style.color = '#2e7d32';
+              msg.textContent = '已切换：' + (r.llm_config.model || h);
+            } else {
+              msg.style.color = '#c62828';
+              msg.textContent = '切换失败，请查看 Letta 日志';
+            }
+          });
+        });
+      });
+    });
+  }
+
+  /* ---- 记忆页 ---- */
+  function loadMemory() {
+    var s = doc.getElementById('adm-memory');
+    s.innerHTML = '加载中…';
+    mainAgent(function (aid) {
+      if (!aid) { s.innerHTML = '未找到智能体'; return; }
+      getJSON(LETTA + '/v1/agents/' + aid + '/memory/blocks', function (blocks) {
+        var list = blocks || [];
+        if (list.length && !Array.isArray(list)) list = list.blocks || [];
+        var core = list.filter(function (b) { return b && (b.label === 'persona' || b.label === 'human'); });
+        if (!core.length) { s.innerHTML = '无核心记忆块'; return; }
+        var html = core.map(function (b) {
+          return '<div style="margin-top:8px;"><b>' + (b.label === 'persona' ? '人格' : '关于你') + '</b>' +
+            '（' + (b.value || '').length + ' 字）' +
+            '<textarea data-bid="' + b.id + '" rows="8" style="width:100%;box-sizing:border-box;padding:6px;border:1px solid #ddd;border-radius:6px;font-size:12px;">' +
+            esc(b.value || '') + '</textarea></div>';
+        }).join('') +
+          '<button id="btn-save-mem" style="' + BTN + 'background:#764ba2;margin-top:8px;">保存记忆</button>' +
+          '<div id="mem-msg" style="margin-top:6px;color:#555;"></div>';
+        s.innerHTML = html;
+        doc.getElementById('btn-save-mem').addEventListener('click', function () {
+          var b = doc.getElementById('btn-save-mem');
+          b.disabled = true; b.textContent = '保存中…';
+          var done = 0, err = 0, total = core.length;
+          s.querySelectorAll('textarea[data-bid]').forEach(function (t) {
+            patchJSON(LETTA + '/v1/blocks/' + t.getAttribute('data-bid'), { value: t.value }, function (r) {
+              done++;
+              if (!r || !r.id) err++;
+              if (done === total) {
+                b.disabled = false; b.textContent = '保存记忆';
+                var msg = doc.getElementById('mem-msg');
+                msg.style.color = err ? '#c62828' : '#2e7d32';
+                msg.textContent = err ? ('保存失败 ' + err + ' 块') : '已保存（对 TA 生效需等下一轮对话）';
+              }
+            });
+          });
+        });
+      });
+    });
+  }
+  function esc(t) {
+    return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  /* ---- 历史页 ---- */
+  function loadHistory() {
+    var s = doc.getElementById('adm-history');
+    s.innerHTML = '加载中…';
+    mainAgent(function (aid) {
+      if (!aid) { s.innerHTML = '未找到智能体'; return; }
+      getJSON(LETTA + '/v1/agents/' + aid + '/messages?limit=20', function (msgs) {
+        if (!Array.isArray(msgs) || !msgs.length) { s.innerHTML = '暂无对话记录'; return; }
+        var rows = msgs.filter(function (m) {
+          return m && (m.message_type === 'user_message' || m.message_type === 'assistant_message');
+        }).slice(0, 20).map(function (m) {
+          var c = m.content;
+          if (Array.isArray(c)) c = c.map(function (x) { return x && x.text ? x.text : ''; }).join('');
+          c = String(c || '').slice(0, 200);
+          var who = m.message_type === 'user_message' ? '<b style="color:#555;">你</b>' : '<b style="color:#667eea;">AI</b>';
+          return '<div style="margin:5px 0;padding:5px 8px;background:#f7f7f9;border-radius:6px;">' + who + '：' + esc(c) + '</div>';
+        }).join('');
+        s.innerHTML = rows;
+      });
+    });
   }
 
   fab.addEventListener('click', function () {
     var show = panel.style.display === 'none';
     panel.style.display = show ? 'block' : 'none';
-    if (show) refreshStatus();
-  });
-
-  doc.getElementById('btn-diagnose').addEventListener('click', function () {
-    var b = doc.getElementById('btn-diagnose');
-    b.textContent = '诊断中…'; b.disabled = true;
-    getJSON('http://127.0.0.1:8283/v1/health/', function (h) {
-      getJSON('http://127.0.0.1:11434/api/ps', function (o) {
-        b.textContent = '一键诊断'; b.disabled = false;
-        var msg = 'Letta 记忆大脑: ' + (h ? '正常' : '异常') + '\nOllama: ' + (o ? '正常' : '异常');
-        if (o && o.models && o.models.length) msg += '（已加载 ' + o.models[0].name + '）';
-        else if (o) msg += '（空闲）';
-        alert(msg);
-      });
-    });
-  });
-
-  doc.getElementById('btn-tts').addEventListener('click', function () {
-    var b = doc.getElementById('btn-tts');
-    b.textContent = '播放中…'; b.disabled = true;
-    try {
-      var u = new SpeechSynthesisUtterance('你好呀，我是你的 AI 伴侣，很高兴见到你～');
-      u.lang = 'zh-CN';
-      u.onend = function () { b.textContent = '🔊 试听她的声音'; b.disabled = false; };
-      u.onerror = function () { b.textContent = '🔊 试听她的声音'; b.disabled = false; };
-      speechSynthesis.cancel();
-      speechSynthesis.speak(u);
-    } catch (e) {
-      b.textContent = '🔊 试听她的声音'; b.disabled = false;
-    }
+    if (show) showTab('status');
   });
 })();
 </script>
